@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-21.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   };
   outputs = { self, nixpkgs }:
   let
@@ -9,6 +9,10 @@
         configuration = { config, pkgs, ... }: {
           imports = [
             (nixpkgs + "/nixos/modules/installer/sd-card/sd-image.nix")
+          ];
+          nixosConfigurations.modules = [
+            ./modules/base
+            .modules/home-assistant
           ];
           sdImage = {
             firmwareSize = 256;
@@ -20,6 +24,7 @@
             populateRootCommands = ''
             '';
           };
+          modules.extraModules = 
           nixpkgs.overlays = [
             (self: super: {
               makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
@@ -67,7 +72,7 @@
               enable_uart=1
             '';
           };
-          networking.hostName = "mattpi";
+          networking.hostName = "ha-pi";
           services.sshd.enable = true;
           systemd.services.wpa_supplicant.serviceConfig.Restart = "always";
           hardware = {
@@ -76,14 +81,19 @@
           };
           networking = {
             useDHCP = false;
-            interfaces.wlan0.useDHCP = true;
-            interfaces.eth0.useDHCP = true;
+            interfaces.wlan0.enable = false;
+          #  interfaces.wlan0.useDHCP = true;
+            interfaces.eth0.useDHCP = false;
+            interfaces.eth0.ipv4 = {
+              address = 192.168.1.3;
+              prefixLength = 24;
+            };
 #            networkmanager.wifi.backend = "iwd";
 #            wireless.iwd.enable = true;
           };
           boot = {
             extraModprobeConfig = ''
-              options cf680211 ieee80211_regdom="GB"
+              options cf680211 ieee80211_regdom="DE"
             '';
           };
 #          services.octoprint = {
@@ -91,8 +101,8 @@
 #            port = 5000;
 #          };
 #          networking.firewall.allowedTCPPorts = [ 5000 ];
-          environment.systemPackages = [ pkgs.mpv ];
-          users.groups.dialout.members = [ "octoprint" ];
+        #  environment.systemPackages = [ pkgs.mpv ];
+        #  users.groups.dialout.members = [ "octoprint" ];
         };
         system = "aarch64-linux";
       };
