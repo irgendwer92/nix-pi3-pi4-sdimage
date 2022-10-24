@@ -10,10 +10,10 @@
           imports = [
             (nixpkgs + "/nixos/modules/installer/sd-card/sd-image.nix")
           ];
-          nixosConfigurations.modules = [
-            ./modules/base
-            .modules/home-assistant
-          ];
+          # nixosConfigurations.modules = [
+          #   ./modules/base
+          #   ./modules/home-assistant
+          # ];
           sdImage = {
             firmwareSize = 256;
             populateFirmwareCommands = ''
@@ -24,7 +24,6 @@
             populateRootCommands = ''
             '';
           };
-          modules.extraModules = 
           nixpkgs.overlays = [
             (self: super: {
               makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
@@ -81,15 +80,15 @@
           };
           networking = {
             useDHCP = false;
-            interfaces.wlan0.enable = false;
+          #  interfaces.wlan0.enable = false;
           #  interfaces.wlan0.useDHCP = true;
             interfaces.eth0.useDHCP = false;
-            interfaces.eth0.ipv4 = {
-              address = 192.168.1.3;
-              prefixLength = 24;
-            };
-#            networkmanager.wifi.backend = "iwd";
-#            wireless.iwd.enable = true;
+            interfaces.eth0.ipv4.addresses = [
+              {
+                address = "192.168.1.3";
+                prefixLength = 24;
+              }
+            ];
           };
           boot = {
             extraModprobeConfig = ''
@@ -105,6 +104,7 @@
         #  users.groups.dialout.members = [ "octoprint" ];
         };
         system = "aarch64-linux";
+        system.stateVersion = "22.11";
       };
     in eval.config.system.build.sdImage;
   in {
